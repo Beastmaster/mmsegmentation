@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 # custom
 import sys
-sys.path.insert(0, os.getcwd() + "/utils")
+sys.path.insert(0, (__file__) + "/../utils")
+print(sys.path)
 from data_utilities import *
 from pathlib import Path
 from PIL import Image
@@ -46,19 +47,19 @@ def SaveSample(sample, save_root, phase):
     """
     ### output format:
         # ├── data
-        # │   ├── my_dataset
-        # │   │   ├── img_dir
-        # │   │   │   ├── train
-        # │   │   │   │   ├── xxx{img_suffix}
-        # │   │   │   │   ├── yyy{img_suffix}
-        # │   │   │   │   ├── zzz{img_suffix}
-        # │   │   │   ├── val
-        # │   │   ├── ann_dir
-        # │   │   │   ├── train
-        # │   │   │   │   ├── xxx{seg_map_suffix}
-        # │   │   │   │   ├── yyy{seg_map_suffix}
-        # │   │   │   │   ├── zzz{seg_map_suffix}
-        # │   │   │   ├── val
+        #      ├── my_dataset
+        #           ├── img_dir
+        #                ├── train
+        #                     ├── xxx{img_suffix}
+        #                     ├── yyy{img_suffix}
+        #                     ├── zzz{img_suffix}
+        #                ├── val
+        #           ├── ann_dir
+        #                ├── train
+        #                     ├── xxx{seg_map_suffix}
+        #                     ├── yyy{seg_map_suffix}
+        #                     ├── zzz{seg_map_suffix}
+        #                ├── val
 
     """
     print(f"saving sample: {sample.name}")
@@ -78,33 +79,36 @@ def SaveSample(sample, save_root, phase):
         mask_name = ann_dir / f"{sample.name}_{i}_sag_mask.png"
         cv2.imwrite(str(mask_name), sag_mask)
 
-# ver2019/sample/data/xx.nii.gz
-# ver2019/sample/data/xx.nii.gz
-source_root = "/Users/shuoqin/work/verse/data/"
-data_name = "dataset-verse19validation"
-save_root = "/Users/shuoqin/work/verse/data/extract"
-phase = "train"
-phase = "test"
-# phase = "val"
 
-raw_data_path = Path(source_root) / data_name / "rawdata"
-mask_path = Path(source_root) / data_name / "derivatives"
-# iterate dirs
-for sub_dir in raw_data_path.iterdir():
-    sub_name = sub_dir.name
-    # print(sub_name)
-    nii_files = list(sub_dir.glob("*.nii.gz"))
-    if len(nii_files) < 1:
-        continue
-    img_nii = nii_files[0]
-    print(img_nii.name.split('.')[0])
-    mask_files = list((mask_path / sub_name).glob("*.nii.gz"))
-    if len(mask_files) < 1:
-        continue
-    mask_nii = mask_files[0]
-    data_sample = NiiSample(img_nii, mask_nii)
-    SaveSample(data_sample, save_root, phase)
-    break
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--source_root", type=str, default="verse/data/dataset-verse19validation", help="")
+    parser.add_argument("--save_root", type=str, default="verse/data/extract", help="")
+    parser.add_argument("--phase", type=str, default="train", help="train/test/val")
+    args = parser.parse_args()
+
+    # ver2019/sample/data/xx.nii.gz
+    # ver2019/sample/data/xx.nii.gz
+
+    raw_data_path = Path(args.source_root) / "rawdata"
+    mask_path = Path(args.source_root) / "derivatives"
+    # iterate dirs
+    for sub_dir in raw_data_path.iterdir():
+        sub_name = sub_dir.name
+        # print(sub_name)
+        nii_files = list(sub_dir.glob("*.nii.gz"))
+        if len(nii_files) < 1:
+            continue
+        img_nii = nii_files[0]
+        print(img_nii.name.split('.')[0])
+        mask_files = list((mask_path / sub_name).glob("*.nii.gz"))
+        if len(mask_files) < 1:
+            continue
+        mask_nii = mask_files[0]
+        data_sample = NiiSample(img_nii, mask_nii)
+        SaveSample(data_sample, args.save_root, args.phase)
 
 
 
